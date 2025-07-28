@@ -1,6 +1,6 @@
 {
   "name": "@gitlive/firebase-analytics",
-  "version": "0.0.1",
+  "version": "0.0.2-SNAPSHOT",
   "description": "Wrapper around firebase for usage in Kotlin Multiplatform projects",
   "main": "firebase-analytics.js",
   "scripts": {
@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/GitLiveApp/firebase-kotlin-sdk",
   "dependencies": {
-    "@gitlive/firebase-app": "0.0.1",
+    "@gitlive/firebase-app": "0.0.2-SNAPSHOT",
     "firebase": "9.19.1",
     "kotlin": "1.6.10",
     "kotlinx-coroutines-core": "1.6.1-native-mt"
