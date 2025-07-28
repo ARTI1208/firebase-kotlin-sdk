@@ -38,7 +38,7 @@ public actual fun Firebase.functions(app: FirebaseApp): FirebaseFunctions =
 public actual fun Firebase.functions(app: FirebaseApp, region: String): FirebaseFunctions =
     rethrow { FirebaseFunctions(getFunctions(app.js, region)) }
 
-public val FirebaseFunctions.js get() = js
+public val FirebaseFunctions.js: Functions get() = js
 
 public actual class FirebaseFunctions internal constructor(internal val js: Functions) {
     public actual fun httpsCallable(name: String, timeout: Duration?): HttpsCallableReference =

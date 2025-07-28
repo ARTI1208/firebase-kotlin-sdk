@@ -73,7 +73,7 @@ public actual fun Firebase.database(url: String): FirebaseDatabase =
 public actual fun Firebase.database(app: FirebaseApp, url: String): FirebaseDatabase =
     rethrow { FirebaseDatabase(getDatabase(app = app.js, url = url)) }
 
-public val FirebaseDatabase.js get() = js
+public val FirebaseDatabase.js: Database get() = js
 
 public actual class FirebaseDatabase internal constructor(internal val js: Database) {
 
