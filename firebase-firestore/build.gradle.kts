@@ -189,10 +189,3 @@ if (project.property("firebase-firestore.skipJsTests") == "true") {
         if (it.name.contains("js", true) && it.name.contains("test", true)) { it.enabled = false }
     }
 }
-
-signing {
-    val signingKey: String? by project
-    val signingPassword: String? by project
-    useInMemoryPgpKeys(signingKey, signingPassword)
-    sign(publishing.publications)
-}
