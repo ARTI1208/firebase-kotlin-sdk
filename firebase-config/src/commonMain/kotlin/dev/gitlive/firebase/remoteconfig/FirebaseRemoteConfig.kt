@@ -128,6 +128,8 @@ public expect class FirebaseRemoteConfig {
      *     keys and values.
      */
     public suspend fun setDefaults(vararg defaults: Pair<String, Any?>)
+
+    public fun addOnConfigUpdateListener(listener: ConfigUpdateListener)
 }
 
 @Deprecated("Replaced with Kotlin Duration", replaceWith = ReplaceWith("fetch(minimumFetchIntervalInSeconds.seconds)"))
@@ -167,3 +169,31 @@ public expect class FirebaseRemoteConfigFetchThrottledException : FirebaseRemote
  * Exception that gets thrown when an operation on Firebase Remote Config fails.
  */
 public expect class FirebaseRemoteConfigServerException : FirebaseRemoteConfigException
+
+public interface ConfigUpdateListener {
+    /**
+     * Callback for when a new config version has been automatically fetched from the backend and has
+     * changed from the activated config.
+     *
+     * @param configUpdate A [ConfigUpdate] with information about the updated config version,
+     * including the set of updated parameters.
+     */
+    public fun onUpdate(configUpdate: ConfigUpdate)
+
+    /**
+     * Callback for when an error occurs while listening for updates or fetching the latest version of
+     * the config.
+     *
+     * @param error A [FirebaseRemoteConfigException] with information about the error.
+     */
+    public fun onError(error: FirebaseRemoteConfigException)
+}
+
+public interface ConfigUpdate {
+    /**
+     * Parameter keys whose values have been updated from the currently activated values. Includes
+     * keys that are added, deleted, and whose value, value source, or metadata has changed.
+     */
+    public val updatedKeys: Set<String>
+}
+

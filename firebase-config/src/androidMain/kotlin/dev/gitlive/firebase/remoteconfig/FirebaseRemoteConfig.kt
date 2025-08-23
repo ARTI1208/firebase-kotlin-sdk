@@ -3,6 +3,7 @@
 package dev.gitlive.firebase.remoteconfig
 
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigClientException
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigException
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigFetchThrottledException
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigServerException
 import dev.gitlive.firebase.Firebase
@@ -12,6 +13,8 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.datetime.Instant
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
+import com.google.firebase.remoteconfig.ConfigUpdate as AndroidConfigUpdate
+import com.google.firebase.remoteconfig.ConfigUpdateListener as AndroidConfigUpdateListener
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig as AndroidFirebaseRemoteConfig
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigInfo as AndroidFirebaseRemoteConfigInfo
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings as AndroidFirebaseRemoteConfigSettings
@@ -61,6 +64,12 @@ public actual class FirebaseRemoteConfig internal constructor(internal val andro
         android.reset().await()
     }
 
+    public actual fun addOnConfigUpdateListener(listener: ConfigUpdateListener) {
+        android.addOnConfigUpdateListener(
+            AndroidConfigUpdateListenerAdapter(listener),
+        )
+    }
+
     private fun AndroidFirebaseRemoteConfigSettings.asCommon(): FirebaseRemoteConfigSettings = FirebaseRemoteConfigSettings(
         fetchTimeout = fetchTimeoutInSeconds.seconds,
         minimumFetchInterval = minimumFetchIntervalInSeconds.seconds,
@@ -81,6 +90,22 @@ public actual class FirebaseRemoteConfig internal constructor(internal val andro
             lastFetchStatus = lastFetchStatus,
         )
     }
+
+    private class AndroidConfigUpdateListenerAdapter(
+        private val listener: ConfigUpdateListener,
+    ) : AndroidConfigUpdateListener {
+
+        override fun onUpdate(configUpdate: AndroidConfigUpdate) {
+            listener.onUpdate(ConfigUpdateImpl(configUpdate.updatedKeys))
+        }
+
+        override fun onError(error: FirebaseRemoteConfigException) {
+            listener.onError(error)
+        }
+    }
+
+    private class ConfigUpdateImpl(override val updatedKeys: Set<String>) : ConfigUpdate
+
 }
 
 public actual typealias FirebaseRemoteConfigException = com.google.firebase.remoteconfig.FirebaseRemoteConfigException

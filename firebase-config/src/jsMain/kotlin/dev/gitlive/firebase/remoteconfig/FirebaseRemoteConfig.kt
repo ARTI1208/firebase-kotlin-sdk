@@ -68,6 +68,10 @@ public actual class FirebaseRemoteConfig internal constructor(internal val js: R
         js.defaultConfig = json(*defaults)
     }
 
+    public actual fun addOnConfigUpdateListener(listener: ConfigUpdateListener) {
+        // JS sdk doesn't support realtime updates
+    }
+
     private fun Settings.toFirebaseRemoteConfigSettings(): FirebaseRemoteConfigSettings = FirebaseRemoteConfigSettings(
         fetchTimeout = fetchTimeoutMillis.toLong().milliseconds,
         minimumFetchInterval = minimumFetchIntervalMillis.toLong().milliseconds,

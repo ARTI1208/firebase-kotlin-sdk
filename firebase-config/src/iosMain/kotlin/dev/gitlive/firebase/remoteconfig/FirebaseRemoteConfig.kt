@@ -100,6 +100,17 @@ public actual class FirebaseRemoteConfig internal constructor(internal val ios: 
         ios.setDefaults(defaults.toMap())
     }
 
+    public actual fun addOnConfigUpdateListener(listener: ConfigUpdateListener) {
+        ios.addOnConfigUpdateListener { update, error ->
+            if (update != null) {
+                @Suppress("UNCHECKED_CAST")
+                listener.onUpdate(ConfigUpdateImpl(update.updatedKeys as Set<String>))
+            } else if (error != null) {
+                listener.onError(error.toException() as FirebaseRemoteConfigException)
+            }
+        }
+    }
+
     private fun FIRRemoteConfigSettings.asCommon(): FirebaseRemoteConfigSettings = FirebaseRemoteConfigSettings(
         fetchTimeout = fetchTimeout.seconds,
         minimumFetchInterval = minimumFetchInterval.seconds,
@@ -112,6 +123,8 @@ public actual class FirebaseRemoteConfig internal constructor(internal val ios: 
         FIRRemoteConfigFetchStatus.FIRRemoteConfigFetchStatusThrottled -> FetchStatus.Throttled
         else -> FetchStatus.Failure
     }
+
+    private class ConfigUpdateImpl(override val updatedKeys: Set<String>) : ConfigUpdate
 }
 
 private suspend inline fun <T, reified R> T.awaitResult(
