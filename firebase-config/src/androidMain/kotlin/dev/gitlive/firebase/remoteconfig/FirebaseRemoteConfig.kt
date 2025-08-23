@@ -19,10 +19,10 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings as AndroidF
 public val FirebaseRemoteConfig.android: AndroidFirebaseRemoteConfig get() = AndroidFirebaseRemoteConfig.getInstance()
 
 public actual val Firebase.remoteConfig: FirebaseRemoteConfig
-    get() = FirebaseRemoteConfig(com.google.firebase.remoteconfig.FirebaseRemoteConfig.getInstance())
+    get() = FirebaseRemoteConfig(AndroidFirebaseRemoteConfig.getInstance())
 
 public actual fun Firebase.remoteConfig(app: FirebaseApp): FirebaseRemoteConfig =
-    FirebaseRemoteConfig(com.google.firebase.remoteconfig.FirebaseRemoteConfig.getInstance(app.android))
+    FirebaseRemoteConfig(AndroidFirebaseRemoteConfig.getInstance(app.android))
 
 public actual class FirebaseRemoteConfig internal constructor(internal val android: AndroidFirebaseRemoteConfig) {
     public actual val all: Map<String, FirebaseRemoteConfigValue>

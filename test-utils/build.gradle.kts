@@ -84,6 +84,12 @@ kotlin {
         nodejs()
         browser()
     }
+    @Suppress("OPT_IN_USAGE")
+    wasmJs {
+        browser()
+    }
+
+    applyDefaultHierarchyTemplate()
 
     sourceSets {
         all {
@@ -98,7 +104,7 @@ kotlin {
             }
         }
 
-        getByName("commonMain") {
+        commonMain {
             dependencies {
                 api(kotlin("test"))
                 api(libs.kotlinx.coroutines.core)
@@ -106,13 +112,13 @@ kotlin {
             }
         }
 
-        getByName("jsMain") {
+        jsMain {
             dependencies {
                 implementation(kotlin("test-js"))
             }
         }
 
-        getByName("jvmMain") {
+        jvmMain {
             dependencies {
                 api(libs.kotlinx.coroutines.swing)
             }

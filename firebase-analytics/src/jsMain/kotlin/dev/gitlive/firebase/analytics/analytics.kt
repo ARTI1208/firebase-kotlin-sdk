@@ -4,8 +4,7 @@ import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.FirebaseApp
 import dev.gitlive.firebase.FirebaseException
 import dev.gitlive.firebase.analytics.externals.getAnalytics
-import dev.gitlive.firebase.js
-import kotlinx.coroutines.await
+import kotlinx.coroutines.jsAwait
 import kotlin.time.Duration
 
 public actual val Firebase.analytics: FirebaseAnalytics
@@ -40,7 +39,7 @@ public actual class FirebaseAnalytics(internal val js: dev.gitlive.firebase.anal
         dev.gitlive.firebase.analytics.externals.setSessionTimeoutInterval(js, sessionTimeoutInterval.inWholeMilliseconds)
     }
 
-    public actual suspend fun getSessionId(): Long? = rethrow { dev.gitlive.firebase.analytics.externals.getSessionId(js).await() }
+    public actual suspend fun getSessionId(): Long? = rethrow { dev.gitlive.firebase.analytics.externals.getSessionId(js).jsAwait() }
 
     public actual fun resetAnalyticsData() {
         dev.gitlive.firebase.analytics.externals.resetAnalyticsData(js)

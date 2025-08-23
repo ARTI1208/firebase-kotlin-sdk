@@ -4,7 +4,6 @@ import com.google.firebase.FirebaseException
 import com.google.firebase.crashlytics.CustomKeysAndValues.Builder
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.FirebaseApp
-import dev.gitlive.firebase.android
 
 public val FirebaseCrashlytics.android: com.google.firebase.crashlytics.FirebaseCrashlytics get() = com.google.firebase.crashlytics.FirebaseCrashlytics.getInstance()
 

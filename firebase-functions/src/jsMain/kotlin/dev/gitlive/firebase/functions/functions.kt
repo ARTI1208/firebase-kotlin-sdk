@@ -17,8 +17,7 @@ import dev.gitlive.firebase.functions.externals.getFunctions
 import dev.gitlive.firebase.functions.externals.httpsCallable
 import dev.gitlive.firebase.functions.externals.invoke
 import dev.gitlive.firebase.internal.decode
-import dev.gitlive.firebase.js
-import kotlinx.coroutines.await
+import kotlinx.coroutines.jsAwait
 import kotlinx.serialization.DeserializationStrategy
 import kotlin.js.json
 import kotlin.time.Duration
@@ -52,9 +51,9 @@ public actual class FirebaseFunctions internal constructor(internal val js: Func
 @PublishedApi
 internal actual data class NativeHttpsCallableReference(val js: HttpsCallable) {
     actual suspend fun invoke(encodedData: Any): HttpsCallableResult = rethrow {
-        HttpsCallableResult(js(encodedData).await())
+        HttpsCallableResult(js(encodedData).jsAwait())
     }
-    actual suspend fun invoke(): HttpsCallableResult = rethrow { HttpsCallableResult(js().await()) }
+    actual suspend fun invoke(): HttpsCallableResult = rethrow { HttpsCallableResult(js().jsAwait()) }
 }
 
 @PublishedApi

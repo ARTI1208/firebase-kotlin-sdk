@@ -46,7 +46,7 @@ public class FirebaseDecoder(public val value: Any?, internal val settings: Deco
 
     override fun decodeString(): String = decodeString(value)
 
-    override fun decodeDouble(): Double = decodeDouble(value)
+    override fun decodeDouble(): Double = decodePlatformDouble(value)
 
     override fun decodeLong(): Long = decodeLong(value)
 
@@ -124,7 +124,7 @@ public open class FirebaseCompositeDecoder(
         decodeElement(descriptor, index, ::decodeChar)
 
     override fun decodeDoubleElement(descriptor: SerialDescriptor, index: Int): Double =
-        decodeElement(descriptor, index, ::decodeDouble)
+        decodeElement(descriptor, index, ::decodePlatformDouble)
 
     override fun decodeFloatElement(descriptor: SerialDescriptor, index: Int): Float =
         decodeElement(descriptor, index, ::decodeFloat)
@@ -175,11 +175,13 @@ public open class FirebaseCompositeDecoder(
 
 private fun decodeString(value: Any?) = value.toString()
 
-private fun decodeDouble(value: Any?) = when (value) {
-    is Number -> value.toDouble()
-    is String -> value.toDouble()
-    else -> throw SerializationException("Expected $value to be double")
-}
+internal expect fun decodePlatformDouble(value: Any?): Double
+
+//private fun decodeDouble(value: Any?) = when (value) {
+//    is Number -> value.toDouble()
+//    is String -> value.toDouble()
+//    else -> throw SerializationException("Expected $value (${value?.let { it::class.simpleName }}) to be double")
+//}
 
 private fun decodeLong(value: Any?) = when (value) {
     is Number -> value.toLong()

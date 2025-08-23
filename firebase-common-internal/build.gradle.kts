@@ -82,14 +82,36 @@ kotlin {
         iosSimulatorArm64()
     }
 
-    js(IR) {
-        useCommonJs()
+    js {
+        compilerOptions {
+            freeCompilerArgs.addAll("-target", "es2020")
+        }
+        compilerOptions {
+            target.set("es2020")
+        }
         nodejs {
             testTask {
                 useKarma {
                     useChromeHeadless()
                 }
             }
+        }
+        browser {
+            testTask {
+                useKarma {
+                    useChromeHeadless()
+                }
+            }
+        }
+    }
+    @Suppress("OPT_IN_USAGE")
+    wasmJs {
+        compilerOptions {
+            freeCompilerArgs.addAll("-target", "es2020")
+        }
+        compilerOptions {
+            target.set("es2020")
+
         }
         browser {
             testTask {
@@ -112,40 +134,42 @@ kotlin {
             }
         }
 
-        getByName("commonMain") {
+        commonMain {
             dependencies {
                 implementation(project(":firebase-common"))
                 api(libs.kotlinx.serialization.core)
             }
         }
 
-        getByName("commonTest") {
+        commonTest {
             dependencies {
                 implementation(project(":test-utils"))
             }
         }
 
-        getByName("androidMain") {
+        androidMain {
             dependencies {
                 api(libs.google.firebase.common.ktx)
             }
         }
 
-        getByName("jsMain") {
-            dependencies {
-                api(npm("firebase", "10.12.2"))
-            }
-        }
-
-        getByName("jvmMain") {
+        jvmMain {
             kotlin.srcDir("src/androidMain/kotlin")
         }
 
-        getByName("jvmTest") {
+        jvmTest {
             dependencies {
                 implementation(kotlin("test-junit"))
             }
             kotlin.srcDir("src/androidAndroidTest/kotlin")
+        }
+
+        webMain {
+            dependencies {
+                dependencies {
+                    api(npm("firebase", "10.12.2"))
+                }
+            }
         }
     }
 }

@@ -103,6 +103,16 @@ kotlin {
             }
         }
     }
+    @Suppress("OPT_IN_USAGE")
+    wasmJs {
+        browser {
+            testTask {
+                useKarma {
+                    useChromeHeadless()
+                }
+            }
+        }
+    }
 
     sourceSets {
         all {
@@ -118,27 +128,28 @@ kotlin {
             }
         }
 
-        getByName("commonMain") {
+        commonMain {
             dependencies {
                 api(project(":firebase-app"))
                 implementation(project(":firebase-common"))
+                implementation(project(":firebase-common-internal"))
                 api(libs.kotlinx.datetime)
             }
         }
 
-        getByName("commonTest") {
+        commonTest {
             dependencies {
                 implementation(project(":test-utils"))
             }
         }
 
-        getByName("androidMain") {
+        androidMain {
             dependencies {
                 api(libs.google.firebase.config.ktx)
             }
         }
 
-        getByName("jvmMain") {
+        jvmMain {
             kotlin.srcDir("src/androidMain/kotlin")
         }
     }

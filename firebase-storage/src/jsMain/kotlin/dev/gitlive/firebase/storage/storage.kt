@@ -7,9 +7,8 @@ package dev.gitlive.firebase.storage
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.FirebaseApp
 import dev.gitlive.firebase.FirebaseException
-import dev.gitlive.firebase.js
 import dev.gitlive.firebase.storage.externals.*
-import kotlinx.coroutines.await
+import kotlinx.coroutines.jsAwait
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.FlowCollector
@@ -65,19 +64,19 @@ public actual class StorageReference(internal val js: dev.gitlive.firebase.stora
     public actual val root: StorageReference get() = StorageReference(js.root)
     public actual val storage: FirebaseStorage get() = FirebaseStorage(js.storage)
 
-    public actual suspend fun getMetadata(): FirebaseStorageMetadata? = rethrow { getMetadata(js).await().toFirebaseStorageMetadata() }
+    public actual suspend fun getMetadata(): FirebaseStorageMetadata? = rethrow { getMetadata(js).jsAwait().toFirebaseStorageMetadata() }
 
     public actual fun child(path: String): StorageReference = StorageReference(ref(js, path))
 
-    public actual suspend fun delete(): Unit = rethrow { deleteObject(js).await() }
+    public actual suspend fun delete(): Unit = rethrow { deleteObject(js).jsAwait() }
 
-    public actual suspend fun getDownloadUrl(): String = rethrow { getDownloadURL(js).await().toString() }
+    public actual suspend fun getDownloadUrl(): String = rethrow { getDownloadURL(js).jsAwait().toString() }
 
-    public actual suspend fun listAll(): ListResult = rethrow { ListResult(listAll(js).await()) }
+    public actual suspend fun listAll(): ListResult = rethrow { ListResult(listAll(js).jsAwait()) }
 
-    public actual suspend fun putFile(file: File, metadata: FirebaseStorageMetadata?): Unit = rethrow { uploadBytes(js, file, metadata?.toStorageMetadata()).await() }
+    public actual suspend fun putFile(file: File, metadata: FirebaseStorageMetadata?): Unit = rethrow { uploadBytes(js, file, metadata?.toStorageMetadata()).jsAwait() }
 
-    public actual suspend fun putData(data: Data, metadata: FirebaseStorageMetadata?): Unit = rethrow { uploadBytes(js, data.data, metadata?.toStorageMetadata()).await() }
+    public actual suspend fun putData(data: Data, metadata: FirebaseStorageMetadata?): Unit = rethrow { uploadBytes(js, data.data, metadata?.toStorageMetadata()).jsAwait() }
 
     public actual fun putFileResumable(file: File, metadata: FirebaseStorageMetadata?): ProgressFlow = rethrow {
         val uploadTask = uploadBytesResumable(js, file, metadata?.toStorageMetadata())

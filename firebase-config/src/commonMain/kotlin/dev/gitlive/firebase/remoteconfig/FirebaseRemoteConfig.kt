@@ -15,7 +15,7 @@ public expect fun Firebase.remoteConfig(app: FirebaseApp): FirebaseRemoteConfig
 /**
  * Entry point for the Firebase Remote Config API.
  *
- * Callers should first get the singleton object using [Firebase.remoteConfig], and then call
+ * Callers should first get the singleton object using [remoteConfig], and then call
  * operations on that singleton object. The singleton contains the complete set of Remote Config
  * parameter values available to your app. The singleton also stores values fetched from the Remote
  * Config server until they are made available for use with a call to [activate].

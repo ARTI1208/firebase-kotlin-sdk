@@ -3,7 +3,7 @@ package dev.gitlive.firebase.messaging
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.messaging.externals.Messaging
 import dev.gitlive.firebase.messaging.externals.getMessaging
-import kotlinx.coroutines.await
+import kotlinx.coroutines.jsAwait
 
 public actual val Firebase.messaging: FirebaseMessaging
     get() = FirebaseMessaging(getMessaging())
@@ -23,9 +23,9 @@ public actual class FirebaseMessaging(internal val js: Messaging) {
         throw NotImplementedError("Unsubscribing from topics is not supported in the JS SDK")
     }
 
-    public actual suspend fun getToken(): String = dev.gitlive.firebase.messaging.externals.getToken(js).await()
+    public actual suspend fun getToken(): String = dev.gitlive.firebase.messaging.externals.getToken(js).jsAwait()
 
     public actual suspend fun deleteToken() {
-        dev.gitlive.firebase.messaging.externals.deleteToken(js).await()
+        dev.gitlive.firebase.messaging.externals.deleteToken(js).jsAwait()
     }
 }
