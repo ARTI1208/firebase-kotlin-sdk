@@ -2,7 +2,6 @@ package dev.gitlive.firebase.firestore.internal
 
 import com.google.android.gms.tasks.TaskExecutors
 import com.google.firebase.firestore.MetadataChanges
-import dev.gitlive.firebase.firestore.EncodedFieldPath
 import dev.gitlive.firebase.firestore.NativeDocumentReferenceType
 import dev.gitlive.firebase.firestore.NativeDocumentSnapshot
 import dev.gitlive.firebase.firestore.Source
@@ -28,8 +27,7 @@ internal actual class NativeDocumentReference actual constructor(actual val nati
 
     actual fun collection(collectionPath: String) = android.collection(collectionPath)
 
-    actual suspend fun get(source: Source) =
-        android.get(source.toAndroidSource()).await()
+    actual suspend fun get(source: Source) = android.get(source.toAndroidSource()).await()
 
     actual suspend fun setEncoded(encodedData: EncodedObject, setOptions: SetOptions) {
         val task = (
@@ -44,17 +42,10 @@ internal actual class NativeDocumentReference actual constructor(actual val nati
         android.update(encodedData.android).await()
     }
 
-    actual suspend fun updateEncodedFieldsAndValues(encodedFieldsAndValues: List<Pair<String, Any?>>) {
+    actual suspend fun updateEncoded(encodedFieldsAndValues: List<FieldAndValue>) {
         encodedFieldsAndValues.takeUnless { encodedFieldsAndValues.isEmpty() }?.let {
-            android.update(encodedFieldsAndValues.toMap())
+            encodedFieldsAndValues.performUpdate(android::update, android::update)
         }?.await()
-    }
-
-    actual suspend fun updateEncodedFieldPathsAndValues(encodedFieldsAndValues: List<Pair<EncodedFieldPath, Any?>>) {
-        encodedFieldsAndValues.takeUnless { encodedFieldsAndValues.isEmpty() }
-            ?.performUpdate { field, value, moreFieldsAndValues ->
-                android.update(field, value, *moreFieldsAndValues)
-            }?.await()
     }
 
     actual suspend fun delete() {
@@ -68,8 +59,7 @@ internal actual class NativeDocumentReference actual constructor(actual val nati
         exception?.let { close(exception) }
     }
 
-    override fun equals(other: Any?): Boolean =
-        this === other || other is NativeDocumentReference && nativeValue == other.nativeValue
+    override fun equals(other: Any?): Boolean = this === other || other is NativeDocumentReference && nativeValue == other.nativeValue
     override fun hashCode(): Int = nativeValue.hashCode()
     override fun toString(): String = nativeValue.toString()
 

@@ -1,6 +1,5 @@
 package dev.gitlive.firebase.firestore.internal
 
-import dev.gitlive.firebase.firestore.EncodedFieldPath
 import dev.gitlive.firebase.firestore.NativeCollectionReference
 import dev.gitlive.firebase.firestore.NativeDocumentReferenceType
 import dev.gitlive.firebase.firestore.NativeDocumentSnapshot
@@ -74,34 +73,29 @@ internal actual class NativeDocumentReference actual constructor(actual val nati
         ).await()
     }
 
-    actual suspend fun updateEncodedFieldsAndValues(encodedFieldsAndValues: List<Pair<String, Any?>>) {
+    actual suspend fun updateEncoded(encodedFieldsAndValues: List<FieldAndValue>) {
         rethrow {
             encodedFieldsAndValues.takeUnless { encodedFieldsAndValues.isEmpty() }
-                ?.performUpdate { field, value, moreFieldsAndValues ->
-                    updateDoc(js, field, value, *moreFieldsAndValues)
-                }
+                ?.performUpdate(
+                    updateAsField = { field, value, moreFieldsAndValues ->
+                        updateDoc(js, field, value, *moreFieldsAndValues)
+                    },
+                    updateAsFieldPath = { fieldPath, value, moreFieldsAndValues ->
+                        updateDoc(js, fieldPath, value, *moreFieldsAndValues)
+                    },
+                )
                 ?.await()
-        }
-    }
-
-    actual suspend fun updateEncodedFieldPathsAndValues(encodedFieldsAndValues: List<Pair<EncodedFieldPath, Any?>>) {
-        rethrow {
-            encodedFieldsAndValues.takeUnless { encodedFieldsAndValues.isEmpty() }
-                ?.performUpdate { field, value, moreFieldsAndValues ->
-                    updateDoc(js, field, value, *moreFieldsAndValues)
-                }?.await()
         }
     }
 
     actual suspend fun delete() = rethrow { deleteDoc(js).await() }
 
-    override fun equals(other: Any?): Boolean =
-        this === other ||
-            other is NativeDocumentReference &&
-            refEqual(
-                nativeValue,
-                other.nativeValue,
-            )
+    override fun equals(other: Any?): Boolean = this === other ||
+        other is NativeDocumentReference &&
+        refEqual(
+            nativeValue,
+            other.nativeValue,
+        )
     override fun hashCode(): Int = nativeValue.hashCode()
     override fun toString(): String = "DocumentReference(path=$path)"
 }

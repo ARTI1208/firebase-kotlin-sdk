@@ -7,25 +7,18 @@ on:
   pull_request:
     branches: [ master ]
 
+concurrency:
+  group: ci-pull-request-${{ github.head_ref }}
+  cancel-in-progress: true
+
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
-      - name: ktLint
-        run: ./gradlew lintKotlin
-      - name: run apiCheck
-        run: ./gradlew apiCheck
   jobMatrixSetup:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     outputs:
       emulator_jobs_matrix: ${{ steps.dataStep.outputs.emulator_jobs_matrix }}
       ios_test_jobs_matrix: ${{ steps.dataStep.outputs.ios_test_jobs_matrix }}
+      macos_test_jobs_matrix: ${{ steps.dataStep.outputs.macos_test_jobs_matrix }}
+      tvos_test_jobs_matrix: ${{ steps.dataStep.outputs.tvos_test_jobs_matrix }}
       js_test_jobs_matrix: ${{ steps.dataStep.outputs.js_test_jobs_matrix }}
       jvm_test_jobs_matrix: ${{ steps.dataStep.outputs.jvm_test_jobs_matrix }}
     steps:
@@ -43,6 +36,8 @@ jobs:
           echo "
           emulator_jobs_matrix=$(jq -c . < ./build/emulator_jobs_matrix.json)
           ios_test_jobs_matrix=$(jq -c . < ./build/ios_test_jobs_matrix.json)
+          macos_test_jobs_matrix=$(jq -c . < ./build/macos_test_jobs_matrix.json)
+          tvos_test_jobs_matrix=$(jq -c . < ./build/tvos_test_jobs_matrix.json)
           js_test_jobs_matrix=$(jq -c . < ./build/js_test_jobs_matrix.json)
           jvm_test_jobs_matrix=$(jq -c . < ./build/jvm_test_jobs_matrix.json)
           " >> $GITHUB_OUTPUT
@@ -113,7 +108,7 @@ jobs:
           path: "**/firebase-debug.log"
   build-ios:
     needs: jobMatrixSetup
-    runs-on: macos-latest
+    runs-on: macos-15
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.jobMatrixSetup.outputs.ios_test_jobs_matrix) }}
@@ -128,6 +123,9 @@ jobs:
             */build/cocoapods
             */build/classes
           key: cocoapods-cache-v2
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '16.4'
       - name: Setup test environment
         uses: ./.github/actions/setup_test_action
       - name: Set Artifact Name
@@ -146,6 +144,84 @@ jobs:
         if: failure()
         with:
           name: iOS ${{ env.ARCHIVE_KEY }} Firebase Debug Log
+          path: "**/firebase-debug.log"
+  build-macos:
+    needs: jobMatrixSetup
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.jobMatrixSetup.outputs.macos_test_jobs_matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cocoapods cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cocoapods
+            ~/Library/Caches/CocoaPods
+            */build/cocoapods
+            */build/classes
+          key: cocoapods-cache-v2
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '16.4'
+      - name: Setup test environment
+        uses: ./.github/actions/setup_test_action
+      - name: Set Artifact Name
+        run: |
+          echo "ARCHIVE_KEY=$(echo ${{ matrix.gradle_tasks }} | cut -d: -f2)" >> $GITHUB_ENV
+      - name: Run macOS Tests
+        run: ./gradlew ${{ matrix.gradle_tasks }}
+      - name: Upload macOS test artifact
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: macOS ${{ env.ARCHIVE_KEY }} Test Report HTML
+          path: "**/build/reports/tests/macosArm64Test/"
+      - name: Upload Firebase Debug Log
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: macOS ${{ env.ARCHIVE_KEY }} Firebase Debug Log
+          path: "**/firebase-debug.log"
+  build-tvos:
+    needs: jobMatrixSetup
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.jobMatrixSetup.outputs.tvos_test_jobs_matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cocoapods cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cocoapods
+            ~/Library/Caches/CocoaPods
+            */build/cocoapods
+            */build/classes
+          key: cocoapods-cache-v2
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '16.4'
+      - name: Setup test environment
+        uses: ./.github/actions/setup_test_action
+      - name: Set Artifact Name
+        run: |
+          echo "ARCHIVE_KEY=$(echo ${{ matrix.gradle_tasks }} | cut -d: -f2)" >> $GITHUB_ENV
+      - name: Run tvOS Tests
+        run: ./gradlew ${{ matrix.gradle_tasks }}
+      - name: Upload tvOS test artifact
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: tvOS ${{ env.ARCHIVE_KEY }} Test Report HTML
+          path: "**/build/reports/tests/tvosArm64Test/"
+      - name: Upload Firebase Debug Log
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: tvOS ${{ env.ARCHIVE_KEY }} Firebase Debug Log
           path: "**/firebase-debug.log"
   build-jvm:
     needs: jobMatrixSetup

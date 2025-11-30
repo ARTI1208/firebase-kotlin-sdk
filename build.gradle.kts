@@ -20,7 +20,7 @@ plugins {
     alias(libs.plugins.kotlinter) apply false
     alias(libs.plugins.kotlinx.binarycompatibilityvalidator)
     alias(libs.plugins.dokka)
-    alias(libs.plugins.maven.central.publish) apply false
+    alias(libs.plugins.publish) apply false
     id("base")
     id("testOptionsConvention")
 }

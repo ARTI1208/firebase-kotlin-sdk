@@ -2,7 +2,7 @@
 <b>Based on <a href="https://github.com/GitLiveApp/firebase-kotlin-sdk">Firebase Kotlin SDK</a> by <a href="https://git.live">GitLive</a></b><br/>
 <br/>
 The Firebase Kotlin SDK is a Kotlin-first SDK for Firebase. It's API is similar to the 
-<a href="https://firebase.github.io/firebase-android-sdk/reference/kotlin/firebase-ktx/">Firebase Android SDK Kotlin Extensions</a> 
+<a href="https://firebase.google.com/docs/reference/kotlin/packages">Firebase Android SDK Kotlin Extensions</a> 
 but also supports multiplatform projects, enabling you to use Firebase directly from your common source targeting 
 <strong>iOS</strong>, <strong>Android</strong>, <strong>Desktop</strong> or <strong>Web</strong>, enabling the use of 
 Firebase as a backend for <a href="https://www.jetbrains.com/lp/compose-multiplatform/">Compose Multiplatform</a>, for example.
@@ -25,6 +25,8 @@ The following libraries are available for the various Firebase products.
 | [Performance](https://firebase.google.com/docs/perf-mon)                        | [`io.githib.arti1208:firebase-perf:0.0.1`](https://central.sonatype.com/artifact/io.github.arti1208/firebase-perf/0.0.1)                   | [![1%](https://img.shields.io/badge/-10%25-orange?style=flat-square)](/firebase-perf/src/commonMain/kotlin/dev/gitlive/firebase/perf/performance.kt)                      |
 | [Crashlytics](https://firebase.google.com/docs/crashlytics)                     | [`io.githib.arti1208:firebase-crashlytics:0.0.1`](https://central.sonatype.com/artifact/io.github.arti1208/firebase-crashlytics/0.0.1)     | [![80%](https://img.shields.io/badge/-10%25-orange?style=flat-square)](/firebase-crashlytics/src/commonMain/kotlin/dev/gitlive/firebase/crashlytics/crashlytics.kt)       |
 
+Is the Firebase library or API you need missing? [Create an issue](https://github.com/GitLiveApp/firebase-kotlin-sdk/issues/new?labels=API+coverage&template=increase-api-coverage.md&title=Add+%5Bclass+name%5D.%5Bfunction+name%5D+to+%5Blibrary+name%5D+for+%5Bplatform+names%5D) to request additional API coverage or be awesome and [submit a PR](https://github.com/GitLiveApp/firebase-kotlin-sdk/fork)
+
 ## Kotlin-first design
 
 Unlike the Kotlin Extensions for the Firebase Android SDK this project does not extend a Java based SDK so we get the full power of Kotlin including coroutines and serialization!
@@ -37,7 +39,7 @@ Asynchronous operations that return a single or no value are represented by susp
 suspend fun signInWithCustomToken(token: String): AuthResult
 ```
 
-It is important to remember that unlike a callback based API, wating for suspending functions to complete is implicit and so if you don't want to wait for the result you can `launch` a new coroutine:
+It is important to remember that unlike a callback based API, waiting for suspending functions to complete is implicit and so if you don't want to wait for the result you can `launch` a new coroutine:
 
 ```kotlin
 //TODO don't use GlobalScope
@@ -180,6 +182,52 @@ In combination with a `SerialName` specified for the child class, you have full 
 }
 ```
 
+<h4>Serialization of Updates</h4>
+Firestore contains update methods that allow for multiple fields to be updated at the same time. 
+This sdk offers special update methods that allow for applying custom serialization to each individual field though an update builder.
+Where an `update` method exists, an `updateFields` method will also be available. In this, each value can have its serializer customized:
+
+```kotlin
+documentRef.updateFields {
+    // Root level encode settings
+    encodeDefaults = false
+    serializersModule = module
+    
+    "field" to "value"
+    // Set the value of otherField to "1" using a custom Serializer
+    "otherField".to(IntAsStringSerializer(), 1)
+    
+    // Overwrite build settings. All fields added within this block will have these build settings applied
+    withEncodeSettings {
+        encodeDefaults = true
+        serializersModule = otherModule
+        "city" to abstractCity
+    }
+}
+```
+
+Similarly, the `Query` methods `startAt`/`startAfter`/`endAt`/`endBefore` have an alternative method in `startAtFieldValues`/`startAfterFieldValues`/`endAtFieldValues`/`endBeforeFieldValues`
+
+```kotlin
+query.orderBy("field", "otherField", "city").startAtFieldValues { // similar syntax for startAfter/endAt/endBefore
+    // Root level encode settings
+    encodeDefaults = false
+    serializersModule = module
+    
+    add("Value")
+
+    // Starts at "1" for the otherField value
+    add(1, IntAsStringSerializer())
+
+    // Overwrite build settings. All field values added within this block will have these build settings applied
+    withEncodeSettings {
+        encodeDefaults = true
+        serializersModule = otherModule
+        add(abstractCity)
+    }
+}
+```
+
 <h3><a href="https://kotlinlang.org/docs/reference/functions.html#default-arguments">Default arguments</a></h3>
 
 To reduce boilerplate, default arguments are used in the places where the Firebase Android SDK employs the builder pattern:
@@ -203,8 +251,6 @@ user.updateProfile(profileUpdates)
 
 user.updateProfile(displayName = "Jane Q. User", photoURL = "https://example.com/jane-q-user/profile.jpg")
 ```
-
-
 
 <h3><a href="https://kotlinlang.org/docs/functions.html#infix-notation">Infix notation</a></h3>
 
@@ -327,3 +373,5 @@ More recently, with the official SDK for Android providing better support for Ko
 For contributors this means following these points when adding new code to the public API of this project:
 - **Match the [Android SDKs API](https://firebase.google.com/docs/reference/kotlin/packages).** When adding new API coverage use the Android SDK as the guide on what the public API should be in regard to naming, parameters etc. The goal here is *near binary compatibility*, meaning code consuming the Android SDK compiles *as is* with the Kotlin SDK after just changing the package imports from `com.google` to `dev.gitlive`.
 - **Follow [Kotlin-first design](https://github.com/GitLiveApp/firebase-kotlin-sdk/?tab=readme-ov-file#kotlin-first-design) principles when needed.** If the API you are adding coverage for is new, and it's Kotlin-first in the Android SDK, then you can simply just match the Android SDKs API as described in the first point, but if it's an older Java-first API then ideally we would include an identical API for API compatibility *plus* a Kotlin-first overload. A good example for this is where the Builder pattern is employed in the Android SDK, here we can follow [this Kotlin-first design principle](https://github.com/GitLiveApp/firebase-kotlin-sdk/?tab=readme-ov-file#default-arguments) and provide both methods, one taking the options created with the builder and an overload with default arguments to avoid the builder boilerplate for developers not porting an existing android code base.
+
+And finally, please remember that this is an open source project, all the project maintainers are **volunteers**, they are **not paid to maintain** this project, and they have **their own jobs**, so please be **patient** when waiting for a response to your issue or PR. Any form of abuse or harassment will not be tolerated and will result in being reported to GitHub.
