@@ -117,12 +117,29 @@ kotlin {
         }
     }
 
+    if (supportedPlatforms.contains(TargetPlatform.WasmJs)) {
+        @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
+        wasmJs {
+            nodejs()
+            browser {
+                testTask {
+                    useKarma {
+                        useChromeHeadless()
+                    }
+                }
+            }
+        }
+    }
+
     sourceSets {
         all {
             languageSettings.apply {
                 this.apiVersion = libs.versions.settings.api.get()
                 this.languageVersion = libs.versions.settings.language.get()
                 progressiveMode = true
+                if (name.lowercase().contains("wasm")) {
+                    optIn("kotlin.js.ExperimentalWasmJsInterop")
+                }
                 optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
                 optIn("kotlinx.serialization.ExperimentalSerializationApi")
                 optIn("kotlinx.serialization.InternalSerializationApi")
@@ -151,6 +168,14 @@ kotlin {
 
         if (supportedPlatforms.contains(TargetPlatform.Js)) {
             getByName("jsMain") {
+                dependencies {
+                    api(npm("firebase", "10.12.2"))
+                }
+            }
+        }
+
+        if (supportedPlatforms.contains(TargetPlatform.WasmJs)) {
+            getByName("wasmJsMain") {
                 dependencies {
                     api(npm("firebase", "10.12.2"))
                 }
