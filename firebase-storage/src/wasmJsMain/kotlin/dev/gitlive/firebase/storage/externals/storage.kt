@@ -3,6 +3,7 @@
 package dev.gitlive.firebase.storage.externals
 
 import dev.gitlive.firebase.externals.FirebaseApp
+import org.khronos.webgl.ArrayBuffer
 import kotlin.js.Promise
 
 public external fun getStorage(app: FirebaseApp? = definedExternally, bucketUrl: String): FirebaseStorage
@@ -16,6 +17,7 @@ public external fun getDownloadURL(ref: StorageReference): Promise<JsString>
 
 public external fun getMetadata(ref: StorageReference): Promise<FullMetadata>
 public external fun updateMetadata(ref: StorageReference, metadata: SettableMetadata): Promise<FullMetadata>
+public external fun getBytes(ref: StorageReference, maxDownloadSizeBytes: Double): Promise<ArrayBuffer>
 
 public external fun uploadBytes(ref: StorageReference, file: JsAny?, metadata: JsAny?): Promise<UploadResult>
 public external fun uploadBytesResumable(ref: StorageReference, data: JsAny?, metadata: JsAny?): UploadTask

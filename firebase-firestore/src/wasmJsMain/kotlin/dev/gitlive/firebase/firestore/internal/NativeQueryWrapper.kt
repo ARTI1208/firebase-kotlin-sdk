@@ -1,8 +1,10 @@
 package dev.gitlive.firebase.firestore.internal
 
 import dev.gitlive.firebase.externals.jsArrayOf
+import dev.gitlive.firebase.externals.jsGet
 import dev.gitlive.firebase.externals.json
 import dev.gitlive.firebase.externals.toJs
+import dev.gitlive.firebase.externals.toKotlin
 import dev.gitlive.firebase.externals.awaitValue
 import dev.gitlive.firebase.firestore.Direction
 import dev.gitlive.firebase.firestore.EncodedFieldPath
@@ -13,6 +15,7 @@ import dev.gitlive.firebase.firestore.QuerySnapshot
 import dev.gitlive.firebase.firestore.Source
 import dev.gitlive.firebase.firestore.WhereConstraint
 import dev.gitlive.firebase.firestore.errorToException
+import dev.gitlive.firebase.firestore.externals.AggregateField
 import dev.gitlive.firebase.firestore.externals.Query
 import dev.gitlive.firebase.firestore.externals.QueryConstraint
 import dev.gitlive.firebase.firestore.externals.and
@@ -38,6 +41,11 @@ internal actual open class NativeQueryWrapper internal actual constructor(actual
     actual fun limit(limit: Number) = query(
         js,
         dev.gitlive.firebase.firestore.externals.limit(limit.toDouble()),
+    ).wrapped
+
+    actual fun limitToLast(limit: Number) = query(
+        js,
+        dev.gitlive.firebase.firestore.externals.limitToLast(limit.toDouble()),
     ).wrapped
 
     actual fun where(filter: Filter) = query(js, filter.toQueryConstraint()).wrapped
@@ -160,6 +168,22 @@ internal actual open class NativeQueryWrapper internal actual constructor(actual
         }
         awaitClose { rethrow { unsubscribe() } }
     }
+
+    actual suspend fun count(): Long = rethrow {
+        val snapshot = dev.gitlive.firebase.firestore.externals.getCountFromServer(js).awaitValue()
+        (jsGet(snapshot.data(), "count")?.toKotlin() as? Number)?.toLong() ?: 0L
+    }
+
+    actual suspend fun sum(field: String): Double = aggregateDouble(dev.gitlive.firebase.firestore.externals.sum(field)) ?: 0.0
+    actual suspend fun sum(field: EncodedFieldPath): Double = aggregateDouble(dev.gitlive.firebase.firestore.externals.sum(field)) ?: 0.0
+    actual suspend fun average(field: String): Double? = aggregateDouble(dev.gitlive.firebase.firestore.externals.average(field))
+    actual suspend fun average(field: EncodedFieldPath): Double? = aggregateDouble(dev.gitlive.firebase.firestore.externals.average(field))
+
+    private suspend fun aggregateDouble(aggregateField: AggregateField): Double? = rethrow {
+        val snapshot = dev.gitlive.firebase.firestore.externals.getAggregateFromServer(js, json("result" to aggregateField)).awaitValue()
+        jsGet(snapshot.data(), "result")?.toKotlin() as? Double
+    }
+
 }
 
 private fun Query.get(source: Source) = when (source) {

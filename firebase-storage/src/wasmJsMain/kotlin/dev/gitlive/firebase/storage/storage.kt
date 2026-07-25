@@ -74,11 +74,24 @@ public actual class StorageReference(internal val js: dev.gitlive.firebase.stora
 
     public actual suspend fun getMetadata(): FirebaseStorageMetadata? = rethrow { getMetadata(js).awaitValue().toFirebaseStorageMetadata() }
 
+    public actual suspend fun getData(maxDownloadSizeBytes: Long): Data = rethrow { Data(org.khronos.webgl.Uint8Array(getBytes(js, maxDownloadSizeBytes.toDouble()).awaitValue())) }
+
+    public actual suspend fun updateMetadata(metadata: FirebaseStorageMetadata): FirebaseStorageMetadata? = rethrow { updateMetadata(js, metadata.toStorageMetadata().unsafeCast()).awaitValue().toFirebaseStorageMetadata() }
+
     public actual fun child(path: String): StorageReference = StorageReference(ref(js, path))
 
     public actual suspend fun delete(): Unit = rethrow { deleteObject(js).awaitUnit() }
 
     public actual suspend fun getDownloadUrl(): String = rethrow { getDownloadURL(js).awaitValue().toKotlinString() }
+
+    public actual suspend fun list(maxResults: Int, pageToken: String?): ListResult = rethrow {
+        ListResult(
+            list(
+                js,
+                json("maxResults" to maxResults, "pageToken" to pageToken).unsafeCast(),
+            ).awaitValue(),
+        )
+    }
 
     public actual suspend fun listAll(): ListResult = rethrow { ListResult(listAll(js).awaitValue()) }
 
@@ -86,9 +99,11 @@ public actual class StorageReference(internal val js: dev.gitlive.firebase.stora
 
     public actual suspend fun putData(data: Data, metadata: FirebaseStorageMetadata?): Unit = rethrow { uploadBytes(js, data.data, metadata?.toStorageMetadata()).awaitUnit() }
 
-    public actual fun putFileResumable(file: File, metadata: FirebaseStorageMetadata?): ProgressFlow = rethrow {
-        val uploadTask = uploadBytesResumable(js, file, metadata?.toStorageMetadata())
+    public actual fun putDataResumable(data: Data, metadata: FirebaseStorageMetadata?): ProgressFlow = putResumable(uploadBytesResumable(js, data.data, metadata?.toStorageMetadata()))
 
+    public actual fun putFileResumable(file: File, metadata: FirebaseStorageMetadata?): ProgressFlow = putResumable(uploadBytesResumable(js, file, metadata?.toStorageMetadata()))
+
+    private fun putResumable(uploadTask: UploadTask): ProgressFlow {
         val flow = callbackFlow {
             val unsubscribe = uploadTask.on(
                 "state_changed",

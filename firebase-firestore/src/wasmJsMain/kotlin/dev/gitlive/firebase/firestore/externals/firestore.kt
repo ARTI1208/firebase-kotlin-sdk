@@ -41,6 +41,10 @@ public external fun deleteField(): FieldValue
 
 public external fun disableNetwork(firestore: Firestore): Promise<JsAny?>
 
+public external fun terminate(firestore: Firestore): Promise<JsAny?>
+
+public external fun waitForPendingWrites(firestore: Firestore): Promise<JsAny?>
+
 public external fun doc(firestore: Firestore, documentPath: String): DocumentReference
 
 public external fun doc(firestore: CollectionReference, documentPath: String? = definedExternally): DocumentReference
@@ -73,19 +77,26 @@ public external fun getDocFromServer(
     reference: DocumentReference,
 ): Promise<DocumentSnapshot>
 
+
 public external fun getDocs(query: Query): Promise<QuerySnapshot>
 
 public external fun getDocsFromCache(query: Query): Promise<QuerySnapshot>
 
 public external fun getDocsFromServer(query: Query): Promise<QuerySnapshot>
 
+public external fun getCountFromServer(query: Query): Promise<AggregateQuerySnapshot>
+
 public external fun getFirestore(app: FirebaseApp? = definedExternally, databaseId: String? = definedExternally): Firestore
 
 public external fun increment(n: Int): FieldValue
 
+public external fun increment(n: Double): FieldValue
+
 public external fun initializeFirestore(app: FirebaseApp, settings: JsAny? = definedExternally, databaseId: String? = definedExternally): Firestore
 
 public external fun limit(limit: Double): QueryConstraint
+
+public external fun limitToLast(limit: Double): QueryConstraint
 
 public external fun onSnapshot(
     reference: DocumentReference,
@@ -215,6 +226,22 @@ public external class FieldValue : JsAny {
 public external interface Query : JsAny
 
 public external interface QueryConstraint : JsAny
+
+public external interface AggregateQuerySnapshot : JsAny {
+    public fun data(): JsAny
+}
+
+public external interface AggregateField : JsAny
+
+public external fun getAggregateFromServer(query: Query, aggregateSpec: JsAny): Promise<AggregateQuerySnapshot>
+
+public external fun sum(field: String): AggregateField
+
+public external fun sum(field: FieldPath): AggregateField
+
+public external fun average(field: String): AggregateField
+
+public external fun average(field: FieldPath): AggregateField
 
 public external interface QuerySnapshot : JsAny {
     public val docs: JsArray<DocumentSnapshot>

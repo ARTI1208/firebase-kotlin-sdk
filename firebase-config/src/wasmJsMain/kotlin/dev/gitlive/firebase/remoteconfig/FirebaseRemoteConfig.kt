@@ -85,6 +85,10 @@ public actual class FirebaseRemoteConfig internal constructor(internal val js: R
         "throttle" -> FetchStatus.Throttled
         else -> error("Unknown FetchStatus: $this")
     }
+
+    public actual fun addOnConfigUpdateListener(listener: ConfigUpdateListener) {
+        // not available
+    }
 }
 
 public actual open class FirebaseRemoteConfigException(code: String, cause: Throwable) : FirebaseException(code, cause)
